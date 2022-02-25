@@ -5,4 +5,4 @@
 # Conventional directory for build output.
 build/
 .vscode/**
-pubspec.lock
+*/**.json

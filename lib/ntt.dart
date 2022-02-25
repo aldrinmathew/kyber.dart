@@ -269,11 +269,11 @@ class NTT {
   ///  Transformation domain.
   static List<int> baseMultiply(int a0, int a1, int b0, int b1, int zeta) {
     List<int> result = [0, 0];
-    result[0] = montgomeryReduce(a1 * b1);
-    result[0] = montgomeryReduce(result[0] * zeta);
-    result[0] = result[0] + montgomeryReduce(a0 * b0);
-    result[1] = montgomeryReduce(a0 * b1);
-    result[1] = result[1] + montgomeryReduce(a1 * b0);
+    result[0] = KyberFunctions.montgomeryReduce(a1 * b1);
+    result[0] = KyberFunctions.montgomeryReduce(result[0] * zeta);
+    result[0] = result[0] + KyberFunctions.montgomeryReduce(a0 * b0);
+    result[1] = KyberFunctions.montgomeryReduce(a0 * b1);
+    result[1] = result[1] + KyberFunctions.montgomeryReduce(a1 * b0);
     return result;
   }
 
@@ -352,7 +352,7 @@ class NTT {
         zeta = zetas[k];
         k = k + 1;
         for (j = start; j < start + l; j++) {
-          t = montgomeryReduce(zeta * list[j + l]);
+          t = KyberFunctions.montgomeryReduce(zeta * list[j + l]);
           list[j + l] = list[j] - t;
           list[j] = list[j] + t;
         }
@@ -374,12 +374,12 @@ class NTT {
           t = list[j];
           list[j] = computeBarret(t + list[j + l]);
           list[j + l] = t - list[j + l];
-          list[j + l] = montgomeryReduce(zeta * list[j + l]);
+          list[j + l] = KyberFunctions.montgomeryReduce(zeta * list[j + l]);
         }
       }
     }
     for (j = 0; j < 256; j++) {
-      list[j] = montgomeryReduce(list[j] * zetasInverse[127]);
+      list[j] = KyberFunctions.montgomeryReduce(list[j] * zetasInverse[127]);
     }
     return list;
   }

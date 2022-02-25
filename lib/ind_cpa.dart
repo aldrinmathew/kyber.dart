@@ -11,9 +11,12 @@ class INDCPA {
     int pos = 0; // i
     int ctr = 0; // j
     while (ctr < len && pos + 3 <= bufl) {
-      val0 = (uint16((buf[pos]) >> 0) | (uint16(buf[pos + 1]) << 8)) & 0xFFF;
-      val1 =
-          (uint16((buf[pos + 1]) >> 4) | (uint16(buf[pos + 2]) << 4)) & 0xFFF;
+      val0 = (KyberFunctions.uint16((buf[pos]) >> 0) |
+              (KyberFunctions.uint16(buf[pos + 1]) << 8)) &
+          0xFFF;
+      val1 = (KyberFunctions.uint16((buf[pos + 1]) >> 4) |
+              (KyberFunctions.uint16(buf[pos + 2]) << 4)) &
+          0xFFF;
       pos = pos + 3;
       if (val0 < paramsQ) {
         r[ctr] = val0;
@@ -34,7 +37,7 @@ class INDCPA {
   static List<List<int>> generateKeys(KyberLevel level) {
     var rnd = List.filled(32, 0);
     for (int i = 0; i < 32; i++) {
-      rnd[i] = nextInt(256);
+      rnd[i] = KyberFunctions.nextInt(256);
     }
     var buffer1 = Uint8List.fromList(rnd);
     var hash1 = sha3.SHA3(512, sha3.SHA3_PADDING, 512);
@@ -42,16 +45,16 @@ class INDCPA {
     var seed = hash1.digest();
     var publicSeed = seed.sublist(0, 32);
     var noiseSeed = seed.sublist(32, 64);
-    var a = generateMatrixA(level, publicSeed, false);
+    var a = KyberFunctions.generateMatrixA(level, publicSeed, false);
     var s = List.filled(paramsK(level), <int>[]);
     var nonce = 0;
     for (int i = 0; i < paramsK(level); i++) {
-      s[i] = sample(noiseSeed, nonce);
+      s[i] = KyberFunctions.sample(noiseSeed, nonce);
       nonce = nonce + 1;
     }
     List<List<int>> e = List.filled(paramsK(level), []);
     for (int i = 0; i < paramsK(level); i++) {
-      e[i] = sample(noiseSeed, nonce);
+      e[i] = KyberFunctions.sample(noiseSeed, nonce);
       nonce = nonce + 1;
     }
     for (int i = 0; i < paramsK(level); i++) {
@@ -66,8 +69,8 @@ class INDCPA {
     var pk = List.filled(paramsK(level), <int>[]);
     for (int i = 0; i < paramsK(level); i++) {
       // montgomery reduction
-      pk[i] =
-          polynomialToMontgomeryDomain(NTT.pointwiseMultiply(level, a[i], s));
+      pk[i] = KyberFunctions.polynomialToMontgomeryDomain(
+          NTT.pointwiseMultiply(level, a[i], s));
     }
     for (int i = 0; i < paramsK(level); i++) {
       pk[i] = NTT.addPolynomials(pk[i], e[i]);
@@ -83,7 +86,7 @@ class INDCPA {
     keys[0] = [];
     var bytes = [];
     for (var i = 0; i < paramsK(level); i++) {
-      bytes = polynomialToBytes(pk[i]);
+      bytes = KyberFunctions.polynomialToBytes(pk[i]);
       for (int j = 0; j < bytes.length; j++) {
         keys[0].add(bytes[j]);
       }
@@ -96,7 +99,7 @@ class INDCPA {
     keys[1] = [];
     bytes = [];
     for (int i = 0; i < paramsK(level); i++) {
-      bytes = polynomialToBytes(s[i]);
+      bytes = KyberFunctions.polynomialToBytes(s[i]);
       for (int j = 0; j < bytes.length; j++) {
         keys[1].add(bytes[j]);
       }
@@ -111,22 +114,22 @@ class INDCPA {
     for (int i = 0; i < paramsK(level); i++) {
       start = (i * 384);
       end = (i + 1) * 384;
-      pk[i] = bytesToPolynomial(pk1.sublist(start, end));
+      pk[i] = KyberFunctions.bytesToPolynomial(pk1.sublist(start, end));
     }
     List<int> seed = pk1.sublist(1536, 1568);
-    var at = generateMatrixA(level, seed, true);
+    var at = KyberFunctions.generateMatrixA(level, seed, true);
     List<List<int>> r = List.filled(paramsK(level), []);
     int nonce = 0;
     for (int i = 0; i < paramsK(level); i++) {
-      r[i] = sample(coins, nonce);
+      r[i] = KyberFunctions.sample(coins, nonce);
       nonce = nonce + 1;
     }
     List<List<int>> e1 = List.filled(paramsK(level), []);
     for (int i = 0; i < paramsK(level); i++) {
-      e1[i] = sample(coins, nonce);
+      e1[i] = KyberFunctions.sample(coins, nonce);
       nonce = nonce + 1;
     }
-    var e2 = sample(coins, nonce);
+    var e2 = KyberFunctions.sample(coins, nonce);
     for (int i = 0; i < paramsK(level); i++) {
       r[i] = NTT.doTransform(r[i]);
     }
@@ -143,7 +146,7 @@ class INDCPA {
     for (int i = 0; i < paramsK(level); i++) {
       u[i] = NTT.addPolynomials(u[i], e1[i]);
     }
-    var m = messageToPolynomial(message);
+    var m = KyberFunctions.messageToPolynomial(message);
     var v = NTT.pointwiseMultiply(level, pk, r);
     v = NTT.doInverse(v);
     v = NTT.addPolynomials(v, e2);
@@ -152,16 +155,17 @@ class INDCPA {
       u[i] = NTT.barrettReducePolynomial(u[i]);
     }
     v = NTT.barrettReducePolynomial(v);
-    var c1 = compress1(level, u);
-    var c2 = compress2(v);
+    var c1 = KyberFunctions.compress1(level, u);
+    var c2 = KyberFunctions.compress2(v);
     return c1 + c2;
   }
 
   static List<int> decrypt(
       KyberLevel level, List<int> c, List<int> privateKey) {
-    var u = decompress1(level, c.sublist(0, 1408));
-    var v = decompress2(c.sublist(1408, 1568));
-    var privateKeyPolyvec = bytesToVectorOfPolynomials(level, privateKey);
+    var u = KyberFunctions.decompress1(level, c.sublist(0, 1408));
+    var v = KyberFunctions.decompress2(c.sublist(1408, 1568));
+    var privateKeyPolyvec =
+        KyberFunctions.bytesToVectorOfPolynomials(level, privateKey);
     for (int i = 0; i < paramsK(level); i++) {
       u[i] = NTT.doTransform(u[i]);
     }
@@ -169,6 +173,6 @@ class INDCPA {
     mp = NTT.doInverse(mp);
     mp = NTT.subtractPolynomials(v, mp);
     mp = NTT.barrettReducePolynomial(mp);
-    return polynomialToMessage(mp);
+    return KyberFunctions.polynomialToMessage(mp);
   }
 }

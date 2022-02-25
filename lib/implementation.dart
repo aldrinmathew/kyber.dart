@@ -26,7 +26,7 @@ class Kyber {
     // read 32 random values (0-255) into a 32 byte array
     var rnd = List.filled(32, 0);
     for (int i = 0; i < 32; i++) {
-      rnd[i] = nextInt(256);
+      rnd[i] = KyberFunctions.nextInt(256);
     }
 
     // concatenate to form IND-CCA2 private key: sk + pk + h(pk) + rnd
@@ -49,7 +49,7 @@ class Kyber {
     // random 32 bytes
     var m = List.filled(32, 0);
     for (int i = 0; i < 32; i++) {
-      m[i] = nextInt(256);
+      m[i] = KyberFunctions.nextInt(256);
     }
 
     // hash m with SHA3-256
@@ -138,7 +138,7 @@ class Kyber {
     var cmp = INDCPA.encrypt(level, pk, m, kr2);
 
     // compare c and cmp
-    var fail = !compareArray(cipherText, cmp);
+    var fail = !KyberFunctions.compareArray(cipherText, cmp);
 
     // hash c with SHA3-256
     var buffer3 = Uint8List.fromList(cipherText);

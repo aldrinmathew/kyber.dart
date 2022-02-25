@@ -41,3 +41,12 @@ class KyberEncryptionResult {
 }
 
 enum KyberLevel { k512, k768, k1024 }
+
+class RejectionSamplingResult {
+  RejectionSamplingResult({
+    required this.nttRepresentation,
+    required this.position,
+  });
+  List<int> nttRepresentation;
+  int position;
+}

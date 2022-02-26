@@ -319,17 +319,18 @@ class NTT {
   }
 
   static int computeBarret(int value) {
-    int newVal = ((1 << 24) + paramsQ ~/ 2) ~/ paramsQ;
-    int t = newVal * value >> 24;
+    num newVal = (((1 << 24) + paramsQ / 2) / paramsQ);
+    int t = (newVal * value).truncate() >> 24;
     t = t * paramsQ;
     return value - t;
   }
 
   static List<int> barrettReducePolynomial(List<int> p) {
+    List<int> list = List.from(p);
     for (int i = 0; i < paramsN; i++) {
-      p[i] = computeBarret(p[i]);
+      list[i] = computeBarret(list[i]);
     }
-    return p;
+    return list;
   }
 
   static List<int> pointwiseMultiply(
@@ -345,12 +346,13 @@ class NTT {
 
   /// Performs an in-place Number Theoretic Transform in `Rq`. The
   ///  input is in standard order, the output in bit-reversed order
-  static List<int> doTransform(List<int> list) {
+  static List<int> doTransform(List<int> values) {
+    List<int> list = List.from(values);
     int j = 0, k = 1, zeta = 0, t = 0;
     for (int l = 128; l >= 2; l >>= 1) {
       for (int start = 0; start < 256; start = j + l) {
         zeta = zetas[k];
-        k = k + 1;
+        k++;
         for (j = start; j < start + l; j++) {
           t = KyberFunctions.montgomeryReduce(zeta * list[j + l]);
           list[j + l] = list[j] - t;
@@ -364,7 +366,8 @@ class NTT {
   /// Performs an in-place Inverse Number Theoretic Transform in `Rq`
   ///  and multiplication by Montgomery factor 2^16. The input is in
   ///  the bit-reversed order, the output is in the standard order
-  static List<int> doInverse(List<int> list) {
+  static List<int> doInverse(List<int> values) {
+    List<int> list = List.from(values);
     int j = 0, k = 0, zeta = 0, t = 0;
     for (int l = 2; l <= 128; l <<= 1) {
       for (int start = 0; start < 256; start = j + l) {

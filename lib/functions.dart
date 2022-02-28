@@ -28,7 +28,7 @@ class KyberFunctions {
   }
 
   static int byte(int value) {
-    value = value % 256;
+    value = value.remainder(256);
     return value;
   }
 
@@ -39,12 +39,12 @@ class KyberFunctions {
       return value;
     } else if (value < end) {
       value = value + 32769;
-      value = value % 65536;
+      value = value.remainder(65536);
       value = start + value;
       return value;
     } else if (value > start) {
       value = value - 32768;
-      value = value % 65536;
+      value = value.remainder(65536);
       value = end + value;
       return value;
     } else {
@@ -53,7 +53,7 @@ class KyberFunctions {
   }
 
   static int uint16(int value) {
-    value = value % 65536;
+    value = value.remainder(65536);
     return value;
   }
 
@@ -65,12 +65,12 @@ class KyberFunctions {
       return value;
     } else if (value < end) {
       value = value + 2147483649;
-      value = value % 4294967296;
+      value = value.remainder(4294967296);
       value = start + value;
       return value;
     } else if (value > start) {
       value = value - 2147483648;
-      value = value % 4294967296;
+      value = value.remainder(4294967296);
       value = end + value;
       return value;
     } else {
@@ -79,7 +79,7 @@ class KyberFunctions {
   }
 
   static int uint32(int value) {
-    value = value % 4294967296;
+    value = value.remainder(4294967296);
     return value;
   }
 

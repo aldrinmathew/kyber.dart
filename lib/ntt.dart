@@ -347,16 +347,16 @@ class NTT {
   /// Performs an in-place Number Theoretic Transform in `Rq`. The
   ///  input is in standard order, the output in bit-reversed order
   static List<int> doTransform(List<int> values) {
-    List<int> list = List.from(values);
-    int j = 0, k = 1, zeta = 0, t = 0;
+    var list = List<int>.from(values);
+    int j = 0, k = 1;
     for (int l = 128; l >= 2; l >>= 1) {
       for (int start = 0; start < 256; start = j + l) {
-        zeta = zetas[k];
-        k++;
-        for (j = start; j < start + l; j++) {
-          t = KyberFunctions.montgomeryReduce(zeta * list[j + l]);
-          list[j + l] = list[j] - t;
-          list[j] = list[j] + t;
+        int zeta = zetas[k];
+        k = k + 1;
+        for (j = start; j < (start + l); j++) {
+          int t = KyberFunctions.montgomeryReduce(zeta * list[j + l]);
+          list[j + l] = KyberFunctions.int16(list[j] - t);
+          list[j] = KyberFunctions.int16(list[j] + t);
         }
       }
     }

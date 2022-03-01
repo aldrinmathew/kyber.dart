@@ -108,7 +108,11 @@ class INDCPA {
   }
 
   static List<int> encrypt(
-      KyberLevel level, List<int> pk1, List<int> message, List<int> coins) {
+    KyberLevel level,
+    List<int> pk1,
+    List<int> message,
+    List<int> coins,
+  ) {
     List<List<int>> pk = List.filled(paramsK(level), []);
     int start = 0, end = 0;
     for (int i = 0; i < paramsK(level); i++) {
@@ -157,12 +161,16 @@ class INDCPA {
     v = NTT.barrettReducePolynomial(v);
     var c1 = KyberFunctions.compress1(level, u);
     var c2 = KyberFunctions.compress2(v);
-    return c1 + c2;
+    var returnValue = List<int>.from(c1);
+    returnValue.addAll(c2);
+    return returnValue;
   }
 
   static List<int> decrypt(
       KyberLevel level, List<int> c, List<int> privateKey) {
-    var u = KyberFunctions.decompress1(level, c.sublist(0, 1408));
+    var u = KyberFunctions.decompress1(level, c.sublist(0, 1408))
+        .map((e) => e.noNull())
+        .toList();
     var v = KyberFunctions.decompress2(c.sublist(1408, 1568));
     var privateKeyPolyvec =
         KyberFunctions.bytesToVectorOfPolynomials(level, privateKey);

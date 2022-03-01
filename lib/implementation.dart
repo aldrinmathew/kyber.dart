@@ -138,16 +138,15 @@ class Kyber {
     var cmp = INDCPA.encrypt(level, pk, m, kr2);
 
     // compare c and cmp
-    var fail = !KyberFunctions.compareArray(cipherText, cmp);
+    var fail = KyberFunctions.compareArray(cipherText, cmp);
 
     // hash c with SHA3-256
     var buffer3 = Uint8List.fromList(cipherText);
     var hash2 = sha3.SHA3(256, sha3.SHA3_PADDING, 256);
     hash2.update(buffer3);
     var ch = hash2.digest();
-
     var ss = <int>[];
-    if (!fail) {
+    if (fail) {
       // hash kr1 and ch with SHAKE-256
       var buffer4 = Uint8List.fromList(kr1);
       var buffer5 = Uint8List.fromList(ch);

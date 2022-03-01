@@ -4,18 +4,8 @@ class KyberFunctions {
   static int montgomeryReduce(int value) {
     int u = int16(int32(value) * paramsQInverse);
     int t = u * paramsQ;
-    // print('Value ' +
-    //     value.toString() +
-    //     '   U ' +
-    //     u.toString() +
-    //     '   T ' +
-    //     t.toString());
     t = value - t;
     t >>= 16;
-    // if (t != int16(t)) {
-    //   print('T Decay for Value $value, u $u, t $t');
-    // }
-    // print(int16(t));
     return int16(t);
   }
 
@@ -53,8 +43,7 @@ class KyberFunctions {
   }
 
   static int uint16(int value) {
-    value = value.remainder(65536);
-    return value;
+    return value % (65536);
   }
 
   static int int32(int value) {
@@ -79,8 +68,7 @@ class KyberFunctions {
   }
 
   static int uint32(int value) {
-    value = value.remainder(4294967296);
-    return value;
+    return value % (4294967296);
   }
 
   static bool compareArray(a, b) {
@@ -145,10 +133,10 @@ class KyberFunctions {
     return r;
   }
 
-  static List<List<int>> decompress1(KyberLevel level, List<int> a) {
-    List<List<int>> r = List.filled(paramsK(level), []);
+  static List<List<int?>> decompress1(KyberLevel level, List<int> a) {
+    List<List<int?>> r = List.filled(paramsK(level), []);
     for (int i = 0; i < paramsK(level); i++) {
-      r[i] = List.filled(384, 0);
+      r[i] = List.filled(384, null);
     }
     int aa = 0;
     List<int> t = List.filled(8, 0);
@@ -175,15 +163,16 @@ class KyberFunctions {
     return r;
   }
 
-  static List<int> subtractQ(List<int> r) {
+  static List<int> subtractQ(List<int> a) {
+    var list = List<int>.from(a);
     for (int i = 0; i < paramsN; i++) {
-      r[i] = r[i] - paramsQ; // should result in a negative integer
+      list[i] = list[i] - paramsQ; // should result in a negative integer
       // push left most signed bit to right most position
       // Dart does bitwise operations in signed 64 bit
       // add q back again if left most bit was 0 (positive number)
-      r[i] = r[i] + ((r[i] >> 63) & paramsQ);
+      list[i] = list[i] + ((list[i] >> 63) & paramsQ);
     }
-    return r;
+    return list;
   }
 
   static List<int> decompress2(List<int> a) {
@@ -260,13 +249,13 @@ class KyberFunctions {
     // List<int> output = List.filled(3 * 168, 0);
 
     /// TODO: Check output bits
-    var xof = sha3.SHA3(128, sha3.SHAKE_PADDING, 672 * 8);
     int ctr = 0;
     for (int i = 0; i < paramsK(level); i++) {
       a[i] = List.filled(paramsK(level), []);
       List<int> transpose = List.filled(2, 0);
 
       for (int j = 0; j < paramsK(level); j++) {
+        var xof = sha3.SHA3(128, sha3.SHAKE_PADDING, 672 * 8);
         // set if transposed matrix or not
         transpose[0] = j;
         transpose[1] = i;
@@ -357,16 +346,16 @@ class KyberFunctions {
   }
 
   static List<int> bytesToPolynomial(List<int> bytes) {
-    List<int> r = List.filled(384, 0);
+    List<int?> r = List.filled(384, null);
     for (int i = 0; i < paramsN / 2; i++) {
-      r[2 * i] = int16(
-          ((uint16(bytes[3 * i + 0]) >> 0) | (uint16(bytes[3 * i + 1]) << 8)) &
-              0xFFF);
-      r[2 * i + 1] = int16(
-          ((uint16(bytes[3 * i + 1]) >> 4) | (uint16(bytes[3 * i + 2]) << 4)) &
-              0xFFF);
+      r[2 * i] = int16(((uint16(bytes[(3 * i) + 0]) >> 0) |
+              (uint16(bytes[(3 * i) + 1]) << 8)) &
+          0xFFF);
+      r[(2 * i) + 1] = int16(((uint16(bytes[(3 * i) + 1]) >> 4) |
+              (uint16(bytes[(3 * i) + 2]) << 4)) &
+          0xFFF);
     }
-    return r;
+    return r.noNull();
   }
 
   static List<int> polynomialToBytes(List<int> poly) {
@@ -390,17 +379,14 @@ class KyberFunctions {
 
   static List<List<int>> bytesToVectorOfPolynomials(
       KyberLevel level, List<int> a) {
-    List<List<int>> r = List.filled(paramsK(level), []);
+    var r = List.filled(paramsK(level), <int?>[]);
+    var start = 0, end = 0;
     for (int i = 0; i < paramsK(level); i++) {
-      r[i] = List.filled(384, 0);
-    }
-    int start = 0, end = 0;
-    for (int i = 0; i < paramsK(level); i++) {
-      start = (i * 384);
+      start = i * 384;
       end = (i + 1) * 384;
       r[i] = bytesToPolynomial(a.sublist(start, end));
     }
-    return r;
+    return r.map((e) => e.noNull()).toList();
   }
 
   static int nextInt(int value) {

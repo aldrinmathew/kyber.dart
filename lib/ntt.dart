@@ -278,44 +278,45 @@ class NTT {
   }
 
   static List<int> polynomialBaseMultiplyMontgomery(List<int> a, List<int> b) {
+    List<int> p = List.from(a), q = List.from(b);
     List<int> rx = [], ry = [];
     for (int i = 0; i < (paramsN / 4); i++) {
       rx = baseMultiply(
-        a[4 * i + 0],
-        a[4 * i + 1],
-        b[4 * i + 0],
-        b[4 * i + 1],
+        p[(4 * i) + 0],
+        p[(4 * i) + 1],
+        q[(4 * i) + 0],
+        q[(4 * i) + 1],
         zetas[64 + i],
       );
       ry = baseMultiply(
-        a[4 * i + 2],
-        a[4 * i + 3],
-        b[4 * i + 2],
-        b[4 * i + 3],
+        p[(4 * i) + 2],
+        p[(4 * i) + 3],
+        q[(4 * i) + 2],
+        q[(4 * i) + 3],
         -zetas[64 + i],
       );
-      a[4 * i + 0] = rx[0];
-      a[4 * i + 1] = rx[1];
-      a[4 * i + 2] = ry[0];
-      a[4 * i + 3] = ry[1];
+      p[(4 * i) + 0] = rx[0];
+      p[(4 * i) + 1] = rx[1];
+      p[(4 * i) + 2] = ry[0];
+      p[(4 * i) + 3] = ry[1];
     }
-    return a;
+    return p;
   }
 
   static List<int> addPolynomials(List<int> a, List<int> b) {
-    List<int> result = List.filled(384, 0);
+    List<int?> result = List.filled(384, null);
     for (int i = 0; i < paramsN; i++) {
       result[i] = a[i] + b[i];
     }
-    return result;
+    return result.noNull();
   }
 
   static List<int> subtractPolynomials(List<int> a, List<int> b) {
-    List<int> result = List.filled(384, 0);
+    List<int?> result = List.filled(384, null);
     for (int i = 0; i < paramsN; i++) {
       result[i] = a[i] - b[i];
     }
-    return result;
+    return result.noNull();
   }
 
   static int computeBarret(int value) {
@@ -337,7 +338,7 @@ class NTT {
       KyberLevel level, List<List<int>> a, List<List<int>> b) {
     List<int> result = polynomialBaseMultiplyMontgomery(a[0], b[0]);
     List<int> t = [];
-    for (int i = 0; i < paramsK(level); i++) {
+    for (int i = 1; i < paramsK(level); i++) {
       t = polynomialBaseMultiplyMontgomery(a[i], b[i]);
       result = addPolynomials(result, t);
     }

@@ -1,3 +1,2 @@
-test/montgomery_reduce_negative.json
-test/montgomery_reduce_positive.json
+test/*.json
 pubspec.lock

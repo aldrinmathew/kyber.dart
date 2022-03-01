@@ -126,6 +126,54 @@ void main() async {
       expect(failure, false);
     });
   });
+
+  group('Number Theoretic Transform', () {
+    var file = File('test/ntt_results.json');
+    var content = file.readAsStringSync();
+    var nttSample = (jsonDecode(content)['ntt'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    var nttInverseSample = (jsonDecode(content)['nttInverse'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    List<int> candidate = [];
+    for (int i = 0; i < 256; i++) {
+      candidate.add(i);
+    }
+
+    var nttResult = <int>[];
+    test('Forward', () {
+      nttResult = NTT.doTransform(candidate);
+      var forwardFailure = false;
+      var forwardFails = <int>[];
+      for (int i = 0; i < nttResult.length; i++) {
+        if (nttResult[i] != nttSample[i]) {
+          forwardFailure = true;
+          forwardFails.add(i);
+        }
+      }
+      if (forwardFailure) {
+        _log('FAILURES :: $forwardFails', _ConsoleColors.red);
+      }
+      expect(forwardFailure, false);
+    });
+
+    test('Inverse', () {
+      var nttInverseResult = NTT.doInverse(nttResult);
+      var inverseFailure = false;
+      var inverseFails = <int>[];
+      for (int i = 0; i < nttInverseResult.length; i++) {
+        if (nttInverseResult[i] != nttInverseSample[i]) {
+          inverseFailure = true;
+          inverseFails.add(i);
+        }
+      }
+      if (inverseFailure) {
+        _log('FAILURES :: $inverseFails', _ConsoleColors.red);
+      }
+      expect(inverseFailure, false);
+    });
+  });
 }
 
 void _log(String text, _ConsoleColors? color) {
@@ -141,3 +189,18 @@ Map<_ConsoleColors, String> _cColors = {
   _ConsoleColors.green: '\x1b[0;32m',
   _ConsoleColors.normal: '\x1b[0m',
 };
+
+extension _ByteConversion on String {
+  ///
+  List<int> toBytes() {
+    if (length.isEven) {
+      List<int> list = [];
+      for (int i = 0; i < length; i += 2) {
+        list.add(int.parse(substring(i, i + 2), radix: 16));
+      }
+      return list;
+    } else {
+      throw Exception('Invalid hex string');
+    }
+  }
+}

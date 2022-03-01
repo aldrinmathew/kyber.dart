@@ -50,3 +50,10 @@ class RejectionSamplingResult {
   List<int> nttRepresentation;
   int position;
 }
+
+extension _FilterNull<T> on List<T?> {
+  /// Returns all elements of this list that are not null, as a new list
+  List<T> noNull() {
+    return where((e) => e != null).map((e) => e!).toList();
+  }
+}

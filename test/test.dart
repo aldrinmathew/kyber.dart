@@ -46,17 +46,44 @@ void main() async {
     });
   });
 
-  group('Barrett Reduction', () {
-    test('Computation', () {
-      var file = File('test/barrett_computation.json');
-      var contents = file.readAsStringSync();
-      var values = (jsonDecode(contents)['values'] as List<dynamic>)
-          .map((e) => e as int)
-          .toList();
-      var failure = false;
-      var fails = <int>[];
+  test('Barrett Reduction', () {
+    var file = File('test/barrett_computation.json');
+    var contents = file.readAsStringSync();
+    var values = (jsonDecode(contents)['values'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    var failure = false;
+    var fails = <int>[];
+    for (int i = 0; i < 100000; i++) {
+      if (values[i] != NTT.computeBarret(i)) {
+        failure = true;
+        fails.add(i);
+      }
+    }
+    if (failure) {
+      _log('FAILURES :: $fails', _ConsoleColors.red);
+    }
+    expect(failure, false);
+  });
+
+  group('Bit Shift', () {
+    var file = File('test/bitshift.json');
+    var contents = file.readAsStringSync();
+    var lsValues = (jsonDecode(contents)['leftShift'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    var rsValues = (jsonDecode(contents)['rightShift'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    var tsValues = (jsonDecode(contents)['tripleShift'] as List<dynamic>)
+        .map((e) => e as int)
+        .toList();
+    test('Left', () {
+      bool failure = false;
+      List<int> fails = [];
       for (int i = 0; i < 100000; i++) {
-        if (values[i] != NTT.computeBarret(i)) {
+        int number = i << 1;
+        if (number != lsValues[i]) {
           failure = true;
           fails.add(i);
         }
@@ -67,7 +94,37 @@ void main() async {
       expect(failure, false);
     });
 
-    test('Reduce Polynomial', () {});
+    test('Right', () {
+      bool failure = false;
+      List<int> fails = [];
+      for (int i = 0; i < 100000; i++) {
+        int number = i >> 1;
+        if (number != rsValues[i]) {
+          failure = true;
+          fails.add(i);
+        }
+      }
+      if (failure) {
+        _log('FAILURES :: $fails', _ConsoleColors.red);
+      }
+      expect(failure, false);
+    });
+
+    test('Triple', () {
+      bool failure = false;
+      List<int> fails = [];
+      for (int i = 0; i < 100000; i++) {
+        int number = i >>> 1;
+        if (number != tsValues[i]) {
+          failure = true;
+          fails.add(i);
+        }
+      }
+      if (failure) {
+        _log('FAILURES :: $fails', _ConsoleColors.red);
+      }
+      expect(failure, false);
+    });
   });
 }
 
